@@ -3,6 +3,11 @@ conftest.py - Pytest Fixtures for Ramov PDF Studio Tests
 """
 
 import sys
+
+# Prevent PyMuPDF from loading unused heavy ONNX/layout machine-learning packages
+for _mod in ("pymupdf.layout", "pymupdf_layout", "pymupdf4llm", "onnxruntime"):
+    sys.modules.setdefault(_mod, None)
+
 import pytest
 import pymupdf
 from pathlib import Path

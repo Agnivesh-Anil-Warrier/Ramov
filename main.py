@@ -9,6 +9,11 @@ from __future__ import annotations
 import sys
 import os
 from pathlib import Path
+
+# Prevent PyMuPDF from loading unused heavy ONNX/layout machine-learning packages
+for _mod in ("pymupdf.layout", "pymupdf_layout", "pymupdf4llm", "onnxruntime"):
+    sys.modules.setdefault(_mod, None)
+
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt

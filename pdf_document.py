@@ -7,9 +7,15 @@ using PyMuPDF. Ensures atomic file replacement and guards against file corruptio
 
 from __future__ import annotations
 import os
+import sys
 import uuid
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
+
+# Prevent PyMuPDF from loading unused heavy ONNX/layout machine-learning packages
+for _mod in ("pymupdf.layout", "pymupdf_layout", "pymupdf4llm", "onnxruntime"):
+    sys.modules.setdefault(_mod, None)
+
 import pymupdf
 from page_model import DocumentModel, PageItem
 

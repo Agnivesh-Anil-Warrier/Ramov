@@ -10,7 +10,17 @@ import os
 from pathlib import Path
 from typing import Optional, List
 from PySide6.QtCore import Qt, QSize, QPoint, Signal
-from PySide6.QtGui import QAction, QIcon, QKeySequence, QFont, QColor
+from PySide6.QtGui import (
+    QAction,
+    QIcon,
+    QKeySequence,
+    QFont,
+    QColor,
+    QPixmap,
+    QPainter,
+    QPen,
+    QPolygon,
+)
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -47,6 +57,45 @@ from pdf_viewer import PDFViewer
 from thumbnail_sidebar import ThumbnailSidebar
 
 
+def _create_empty_state_icon() -> QPixmap:
+    """Renders a clean, high-DPI document vector graphic without font fallback overhead."""
+    pix = QPixmap(72, 84)
+    pix.fill(QColor(0, 0, 0, 0))
+    p = QPainter(pix)
+    p.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+    # Document body
+    p.setBrush(QColor("#f8fafc"))
+    p.setPen(QPen(QColor("#cbd5e1"), 2))
+    p.drawRoundedRect(4, 4, 64, 76, 6, 6)
+
+    # Folded corner
+    p.setBrush(QColor("#e2e8f0"))
+    fold = QPolygon([
+        QPoint(52, 4),
+        QPoint(68, 20),
+        QPoint(52, 20),
+    ])
+    p.drawPolygon(fold)
+
+    # Red PDF badge
+    p.setBrush(QColor("#ef4444"))
+    p.setPen(Qt.PenStyle.NoPen)
+    p.drawRoundedRect(12, 28, 30, 15, 3, 3)
+
+    p.setPen(QColor("white"))
+    font = QFont("Segoe UI", 8, QFont.Weight.Bold)
+    p.setFont(font)
+    p.drawText(12, 28, 30, 15, int(Qt.AlignmentFlag.AlignCenter), "PDF")
+
+    # Content preview lines
+    p.setPen(QPen(QColor("#cbd5e1"), 2))
+    p.drawLine(14, 52, 58, 52)
+    p.drawLine(14, 60, 46, 60)
+    p.end()
+    return pix
+
+
 class EmptyStateWidget(QWidget):
     """Clean, modern welcome / empty state shown when no document is open."""
 
@@ -58,8 +107,8 @@ class EmptyStateWidget(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(16)
 
-        icon_label = QLabel("📄")
-        icon_label.setStyleSheet("font-size: 64px;")
+        icon_label = QLabel()
+        icon_label.setPixmap(_create_empty_state_icon())
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_label)
 
@@ -195,7 +244,7 @@ class MainWindow(QMainWindow):
         self.status_zoom = QLabel("Zoom: 100%")
         self.status_bar.addPermanentWidget(self.status_zoom)
 
-        self.status_mode_badge = QLabel(" 👁️ VIEWING MODE ")
+        self.status_mode_badge = QLabel(" ● VIEWING MODE ")
         self.status_mode_badge.setStyleSheet("""
             background: #dbeafe;
             color: #1e40af;
@@ -406,7 +455,7 @@ class MainWindow(QMainWindow):
         self._mode_toggle_btn = QToolButton(self)
         self._mode_toggle_btn.setCheckable(True)
         self._mode_toggle_btn.setChecked(False)
-        self._mode_toggle_btn.setText("👁️ Viewing Mode")
+        self._mode_toggle_btn.setText("Viewing Mode")
         self._mode_toggle_btn.setToolTip("Toggle between Viewing Mode and Editing Mode (Ctrl+M)")
         self._mode_toggle_btn.setShortcut(QKeySequence("Ctrl+M"))
         self._mode_toggle_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -466,7 +515,7 @@ class MainWindow(QMainWindow):
 
     def _update_mode_toggle_style(self) -> None:
         if self.is_edit_mode:
-            self._mode_toggle_btn.setText("✏️ Editing Mode (Active)")
+            self._mode_toggle_btn.setText("Editing Mode (Active)")
             self._mode_toggle_btn.setStyleSheet("""
                 QToolButton {
                     background: #f59e0b;
@@ -480,7 +529,7 @@ class MainWindow(QMainWindow):
                     background: #d97706;
                 }
             """)
-            self.status_mode_badge.setText(" ✏️ EDITING MODE (Pages Unlocked) ")
+            self.status_mode_badge.setText(" ● EDITING MODE (Pages Unlocked) ")
             self.status_mode_badge.setStyleSheet("""
                 background: #fef3c7;
                 color: #b45309;
@@ -489,7 +538,7 @@ class MainWindow(QMainWindow):
                 border-radius: 4px;
             """)
         else:
-            self._mode_toggle_btn.setText("👁️ Viewing Mode (Active)")
+            self._mode_toggle_btn.setText("Viewing Mode (Active)")
             self._mode_toggle_btn.setStyleSheet("""
                 QToolButton {
                     background: #3b82f6;
@@ -503,7 +552,7 @@ class MainWindow(QMainWindow):
                     background: #2563eb;
                 }
             """)
-            self.status_mode_badge.setText(" 👁️ VIEWING MODE (Read-only) ")
+            self.status_mode_badge.setText(" ● VIEWING MODE (Read-only) ")
             self.status_mode_badge.setStyleSheet("""
                 background: #dbeafe;
                 color: #1e40af;
