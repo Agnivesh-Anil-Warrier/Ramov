@@ -11,6 +11,7 @@ a = Analysis(
     datas=[
         ('app_icon.ico', '.'),
         ('app_icon.png', '.'),
+        ('splash_logo.png', '.'),
     ],
     hiddenimports=[
         'PySide6.QtCore',
@@ -66,9 +67,20 @@ a = Analysis(
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
+splash = Splash(
+    'splash_logo.png',
+    binaries=a.binaries,
+    datas=a.datas,
+    text_pos=None,
+    text_size=12,
+    always_on_top=True,
+)
+
 exe = EXE(
     pyz,
     a.scripts,
+    splash,
+    splash.binaries,
     a.binaries,
     a.zipfiles,
     a.datas,
@@ -77,7 +89,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,

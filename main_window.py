@@ -22,6 +22,7 @@ from PySide6.QtGui import (
     QPolygon,
 )
 from PySide6.QtWidgets import (
+    QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -165,6 +166,11 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Ramov PDF Studio")
         self.resize(1200, 800)
+
+        # Set window icon directly on the window for Windows taskbar & titlebar
+        app_inst = QApplication.instance()
+        if app_inst and not app_inst.windowIcon().isNull():
+            self.setWindowIcon(app_inst.windowIcon())
 
         # Core logic models
         self.doc_handler = PDFDocumentHandler()
