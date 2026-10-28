@@ -15,7 +15,7 @@ for _mod in ("pymupdf.layout", "pymupdf_layout", "pymupdf4llm", "onnxruntime"):
     sys.modules.setdefault(_mod, None)
 
 from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtCore import Qt
 from main_window import MainWindow
 
@@ -38,6 +38,11 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName("Ramov PDF Studio")
     app.setOrganizationName("Ramov")
+
+    # Set application & taskbar icon
+    icon_path = Path(__file__).resolve().parent / "app_icon.ico"
+    if icon_path.is_file():
+        app.setWindowIcon(QIcon(str(icon_path)))
 
     # Clean default application font
     font = app.font()
